@@ -17,6 +17,8 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from __future__ import print_function
+
 import copy
 import functools
 import os
@@ -24,7 +26,31 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
+from contextlib import contextmanager
+
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from repoze.lru import lru_cache
+
+try:
+    from os import cpu_count as os_cpu_count
+except ImportError:
+    from multiprocessing import cpu_count as os_cpu_count
+
+@contextmanager
+def ChDir(path):
+    prev_path = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(prev_path)
 
 from setuptools import Extension, find_packages, setup
 from setuptools.command.build_ext import build_ext
@@ -47,10 +73,10 @@ if SYSTEM_IS_UNIX:
     MODULES.append(IsalExtension("isal._isal", ["src/isal/_isal.pyx"]))
 
 
-class BuildIsalExt(build_ext):
+class BuildIsalExt(build_ext, object):
     def build_extension(self, ext):
         if not isinstance(ext, IsalExtension):
-            super().build_extension(ext)
+            super(BuildIsalExt, self).build_extension(ext)
             return
 
         # Add option to link dynamically for packaging systems such as conda.
@@ -77,13 +103,13 @@ class BuildIsalExt(build_ext):
                 ext.libraries = ["isa-l"]  # isa-l.dll
             else:
                 raise NotImplementedError(
-                    f"Unsupported platform: {sys.platform}")
+                    "Unsupported platform: %s"%sys.platform)
         else:
             if self.compiler.compiler_type == "msvc":
                 compiler = copy.deepcopy(self.compiler)
                 if not compiler.initialized:
                     compiler.initialize()
-                compiler_command = f'"{compiler.cc}"'
+                compiler_command = '"%s"'%compiler.cc
                 compiler_args = compiler.compile_options
             elif self.compiler.compiler_type == "unix":
                 compiler_command = self.compiler.compiler[0]
@@ -100,7 +126,7 @@ class BuildIsalExt(build_ext):
                     os.path.join(isa_l_prefix_dir, "isa-l_static.lib")]
             else:
                 raise NotImplementedError(
-                    f"Unsupported platform: {sys.platform}")
+                    "Unsupported platform: %s"%sys.platform)
             ext.include_dirs = [os.path.join(isa_l_prefix_dir,
                                              "include")]
             # -fPIC needed for proper static linking
@@ -116,17 +142,17 @@ class BuildIsalExt(build_ext):
             for cython_ext in cythonized_exts:
                 cython_ext.define_macros = [("CYTHON_TRACE_NOGIL", "1")]
                 cython_ext._needs_stub = False
-                super().build_extension(cython_ext)
+                super(BuildIsalExt, self).build_extension(cython_ext)
             return
-        super().build_extension(ext)
+        super(BuildIsalExt, self).build_extension(ext)
 
 
 # Use a cache to prevent isa-l from being build twice. According to the
 # functools docs lru_cache with maxsize None is faster. The shortcut called
 # 'cache' is only available from python 3.9 onwards.
 # see: https://docs.python.org/3/library/functools.html#functools.cache
-@functools.lru_cache(maxsize=None)
-def build_isa_l(compiler_command: str, compiler_options: str):
+@lru_cache(maxsize=None)
+def build_isa_l(compiler_command, compiler_options):
     # Creating temporary directories
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
@@ -146,16 +172,18 @@ def build_isa_l(compiler_command: str, compiler_options: str):
     if hasattr(os, "sched_getaffinity"):
         cpu_count = len(os.sched_getaffinity(0))
     else:  # sched_getaffinity not available on all platforms
-        cpu_count = os.cpu_count() or 1  # os.cpu_count() can return None
-    run_args = dict(cwd=build_dir, env=build_env)
+        cpu_count = os_cpu_count() or 1  # os.cpu_count() can return None
+    run_args = dict(env=build_env)  # , cwd=build_dir)
     if SYSTEM_IS_UNIX:
-        subprocess.run(os.path.join(build_dir, "autogen.sh"), **run_args)
-        subprocess.run([os.path.join(build_dir, "configure"),
-                        "--prefix", temp_prefix], **run_args)
-        subprocess.run(["make", "-j", str(cpu_count)], **run_args)
-        subprocess.run(["make", "-j", str(cpu_count), "install"], **run_args)
+        with ChDir(build_dir):
+            subprocess.check_call(os.path.join(build_dir, "autogen.sh"), **run_args)
+            subprocess.check_call([os.path.join(build_dir, "configure"),
+                                   "--prefix", temp_prefix], **run_args)
+            subprocess.check_call(["make", "-j", str(cpu_count)], **run_args)
+            subprocess.check_call(["make", "-j", str(cpu_count), "install"], **run_args)
     elif SYSTEM_IS_WINDOWS:
-        subprocess.run(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)
+        with ChDir(build_dir):
+            subprocess.run(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)
         Path(temp_prefix, "include").mkdir()
         print(temp_prefix, file=sys.stderr)
         shutil.copytree(os.path.join(build_dir, "include"),
@@ -163,7 +191,7 @@ def build_isa_l(compiler_command: str, compiler_options: str):
         shutil.copy(os.path.join(build_dir, "isa-l_static.lib"),
                     os.path.join(temp_prefix, "isa-l_static.lib"))
     else:
-        raise NotImplementedError(f"Unsupported platform: {sys.platform}")
+        raise NotImplementedError("Unsupported platform: %s"%sys.platform)
     shutil.rmtree(build_dir)
     return temp_prefix
 
@@ -191,7 +219,8 @@ setup(
                            'isa-l/Release_notes.txt']},
     url="https://github.com/pycompression/python-isal",
     classifiers=[
-        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
@@ -205,6 +234,6 @@ setup(
         "Operating System :: MacOS",
         "Operating System :: Microsoft :: Windows",
     ],
-    python_requires=">=3.6",
+    python_requires=">=2.7",
     ext_modules=MODULES
 )

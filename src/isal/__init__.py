@@ -21,10 +21,10 @@ from typing import Optional
 
 try:
     from . import _isal
-    ISAL_MAJOR_VERSION: Optional[int] = _isal.ISAL_MAJOR_VERSION
-    ISAL_MINOR_VERSION: Optional[int] = _isal.ISAL_MINOR_VERSION
-    ISAL_PATCH_VERSION: Optional[int] = _isal.ISAL_PATCH_VERSION
-    ISAL_VERSION: Optional[str] = _isal.ISAL_VERSION
+    ISAL_MAJOR_VERSION = _isal.ISAL_MAJOR_VERSION
+    ISAL_MINOR_VERSION = _isal.ISAL_MINOR_VERSION
+    ISAL_PATCH_VERSION = _isal.ISAL_PATCH_VERSION
+    ISAL_VERSION = _isal.ISAL_VERSION
 except ImportError:  # isa-l.h not available on windows
     ISAL_MAJOR_VERSION = None
     ISAL_MINOR_VERSION = None

@@ -303,8 +303,8 @@ GzipFile = IGzipFile
 _GzipReader = _IGzipReader
 
 
-def _create_simple_gzip_header(compresslevel: int,
-                               mtime: Optional[SupportsInt] = None) -> bytes:
+def _create_simple_gzip_header(compresslevel,
+                               mtime = None):
     """
     Write a simple gzip header with no extra fields.
     :param compresslevel: Compresslevel used to determine the xfl bytes.
@@ -321,7 +321,7 @@ def _create_simple_gzip_header(compresslevel: int,
     return struct.pack("<BBBBLBB", 0x1f, 0x8b, 8, 0, int(mtime), xfl, 255)
 
 
-def compress(data, compresslevel=_COMPRESS_LEVEL_BEST, *, mtime=None):
+def compress(data, compresslevel=_COMPRESS_LEVEL_BEST, mtime=None):
     """Compress data in one shot and return the compressed string.
     Optional argument is the compression level, in range of 0-3.
     """
@@ -333,7 +333,7 @@ def compress(data, compresslevel=_COMPRESS_LEVEL_BEST, *, mtime=None):
     return header + compressed
 
 
-def _gzip_header_end(data: bytes) -> int:
+def _gzip_header_end(data):
     """
     Find the start of the raw deflate block in a gzip file.
     :param data: Compressed data that starts with a gzip header.
@@ -346,7 +346,7 @@ def _gzip_header_end(data: bytes) -> int:
     # We are not interested in mtime, xfl and os flags.
     magic, method, flags = struct.unpack("<HBB", data[:4])
     if magic != 0x8b1f:
-        raise BadGzipFile(f"Not a gzipped file ({repr(data[:2])})")
+        raise BadGzipFile("Not a gzipped file (%s)"%repr(data[:2]))
     if method != 8:
         raise BadGzipFile("Unknown compression method")
     pos = 10
@@ -371,8 +371,8 @@ def _gzip_header_end(data: bytes) -> int:
         # CRC is stored as a 16-bit integer by taking last bits of crc32.
         crc = isal_zlib.crc32(data[:pos]) & 0xFFFF
         if header_crc != crc:
-            raise BadGzipFile(f"Corrupted header. Checksums do not "
-                              f"match: {crc} != {header_crc}")
+            raise BadGzipFile("Corrupted header. Checksums do not "
+                              "match: %s != %s"%(crc, header_crc))
         pos += 2
     return pos
 
@@ -381,7 +381,7 @@ def decompress(data):
     """Decompress a gzip compressed string in one shot.
     Return the decompressed string.
     """
-    all_blocks: List[bytes] = []
+    all_blocks = []
     while True:
         if data == b"":
             break
@@ -465,12 +465,12 @@ def main():
         else:
             out_filepath, extension = os.path.splitext(args.file)
             if extension != ".gz" and not args.stdout:
-                sys.exit(f"filename doesn't end in .gz: {args.file!r}. "
-                         f"Cannot determine output filename.")
+                sys.exit("filename doesn't end in .gz: %s. "
+                         "Cannot determine output filename."%repr(args.file))
     if out_filepath is not None and not args.force:
         if os.path.exists(out_filepath):
-            yes_or_no = input(f"{out_filepath} already exists; "
-                              f"do you wish to overwrite (y/n)?")
+            yes_or_no = input("%s already exists; "
+                              "do you wish to overwrite (y/n)?"%out_filepath)
             if yes_or_no not in {"y", "Y", "yes"}:
                 sys.exit("not overwritten")
 
