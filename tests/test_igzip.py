@@ -31,7 +31,10 @@ import sys
 import tempfile
 import zlib
 from gzip import FCOMMENT, FEXTRA, FHCRC, FNAME, FTEXT  # type: ignore
-from pathlib import Path
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 from isal import igzip, isal_zlib
 
@@ -79,7 +82,7 @@ def test_decompress_stdin_stdout(capsysbinary, level):
 def test_compress_stdin_stdout(capsysbinary, level):
     mock_stdin = io.BytesIO(DATA)
     sys.stdin = io.TextIOWrapper(mock_stdin)
-    sys.argv = ["", f"-{level}"]
+    sys.argv = ["", "-%s"%level]
     igzip.main()
     out, err = capsysbinary.readouterr()
     assert err == b''
@@ -354,8 +357,8 @@ def test_header_corrupt():
     compressed = header + data + trailer
     with pytest.raises(igzip.BadGzipFile) as error:
         igzip.decompress(compressed)
-    error.match(f"Corrupted header. "
-                f"Checksums do not match: {true_crc} != {crc}")
+    error.match("Corrupted header. "
+                "Checksums do not match: %s != %s"%(true_crc, crc))
 
 
 TRUNCATED_HEADERS = [

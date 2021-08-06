@@ -38,8 +38,8 @@ from .test_compat import DATA as RAW_DATA
 
 
 class Flag(NamedTuple):
-    comp: int
-    decomp: int
+    comp = 0  # : int
+    decomp = 0  # : int
 
 
 DATA = RAW_DATA[:128 * 1024]
@@ -62,7 +62,7 @@ MEM_LEVELS = [MEM_LEVEL_DEFAULT, MEM_LEVEL_MIN, MEM_LEVEL_SMALL,
 @pytest.mark.parametrize(["level", "flag", "mem_level", "hist_bits"],
                          itertools.product(
                              COMPRESS_LEVELS, FLAGS, MEM_LEVELS, HIST_BITS))
-def test_compress_decompress(level, flag: Flag, mem_level, hist_bits):
+def test_compress_decompress(level, flag, mem_level, hist_bits):
     comp = igzip_lib.compress(DATA, level, flag.comp, mem_level, hist_bits)
     decomp = igzip_lib.decompress(comp, flag.decomp, hist_bits)
     assert decomp == DATA
