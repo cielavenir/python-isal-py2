@@ -1,3 +1,5 @@
+python-isal-py2: isal.isal_zlib/igzip_lib backported to Python2. Note that isal.igzip is not backported because gzip._GzipReader is missing.
+
 .. image:: https://img.shields.io/pypi/v/isal.svg
   :target: https://pypi.org/project/isal/
   :alt:
