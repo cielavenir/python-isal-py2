@@ -26,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import re
 from contextlib import contextmanager
 
 os.environ.pop('D', None)
@@ -159,6 +160,7 @@ def build_isa_l(compiler_command, compiler_options):
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
     shutil.copytree(ISA_L_SOURCE, build_dir)
+    compiler_options = re.sub('-isysroot /[^\s]+','',compiler_options)
 
     # Build environment is a copy of OS environment to allow user to influence
     # it.
