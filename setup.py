@@ -28,6 +28,8 @@ import sys
 import tempfile
 from contextlib import contextmanager
 
+os.environ.pop('D', None)
+
 try:
     from pathlib import Path
 except ImportError:
