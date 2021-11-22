@@ -183,11 +183,13 @@ def build_isa_l(compiler_command, compiler_options):
     run_args = dict(env=build_env)  # , cwd=build_dir)
     if SYSTEM_IS_UNIX:
         with ChDir(build_dir):
-            subprocess.check_call(os.path.join(build_dir, "autogen.sh"), **run_args)
-            subprocess.check_call([os.path.join(build_dir, "configure"),
-                                   "--prefix", temp_prefix], **run_args)
-            subprocess.check_call(["make", "-j", str(cpu_count)], **run_args)
-            subprocess.check_call(["make", "-j", str(cpu_count), "install"], **run_args)
+            # we need libisal.a compiled with -fPIC
+            # we build .a from slib .o
+            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "slib"], **run_args)
+            shutil.copytree(os.path.join(build_dir, "include"),
+                            os.path.join(temp_prefix, "include", "isa-l"))
+            os.mkdir(os.path.join(temp_prefix, "lib"))
+            subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS:
         with ChDir(build_dir):
             subprocess.run(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)
