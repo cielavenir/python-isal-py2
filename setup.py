@@ -39,7 +39,10 @@ except ImportError:
 try:
     from functools import lru_cache
 except ImportError:
-    from repoze.lru import lru_cache
+    try:
+        from functools32 import lru_cache
+    except ImportError:
+        from repoze.lru import lru_cache
 
 try:
     from os import cpu_count as os_cpu_count
