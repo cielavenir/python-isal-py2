@@ -194,7 +194,7 @@ def build_isa_l(compiler_command, compiler_options):
         Path(temp_prefix, "include").mkdir()
         print(temp_prefix, file=sys.stderr)
         shutil.copytree(os.path.join(build_dir, "include"),
-                        Path(temp_prefix, "include", "isa-l"))
+                        os.path.join(temp_prefix, "include", "isa-l"))
         shutil.copy(os.path.join(build_dir, "isa-l_static.lib"),
                     os.path.join(temp_prefix, "isa-l_static.lib"))
     else:
