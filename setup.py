@@ -212,8 +212,8 @@ setup(
     description="Faster zlib and gzip compatible compression and "
                 "decompression by providing python bindings for the ISA-L "
                 "library.",
-    author="Leiden University Medical Center",
-    author_email="r.h.p.vorderman@lumc.nl",  # A placeholder for now
+    author="Leiden University Medical Center, Python2 port by @cielavenir",
+    author_email="cielartisan@gmail.com",
     long_description=Path("README.rst").read_text(),
     long_description_content_type="text/x-rst",
     cmdclass={"build_ext": BuildIsalExt},
