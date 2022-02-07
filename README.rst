@@ -1,8 +1,6 @@
-python-isal-py2: isal.isal_zlib/igzip_lib backported to Python2. Note that isal.igzip is not backported because gzip._GzipReader is missing.
-
-To use gzip, do `from isal import isal_zlib; gzip.zlib = isal_zlib`. For zip (on Python2), use zipfile39.
-
-Note that pathlib2 and functools32 are required for Python2.
+- python-isal-py2: isal.isal_zlib/igzip_lib backported to Python2. Note that isal.igzip is not backported because gzip._GzipReader is missing.
+- To use gzip, do ``from isal import isal_zlib; gzip.zlib = isal_zlib``. For zip (on Python2), use zipfile39.
+- Note that pathlib2 and functools32 are required for Python2.
 
 .. image:: https://img.shields.io/pypi/v/isal.svg
   :target: https://pypi.org/project/isal/
