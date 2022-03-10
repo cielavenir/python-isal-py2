@@ -33,7 +33,8 @@ os.environ.pop('D', None)
 
 try:
     from pathlib import Path
-except ImportError:
+    Path.read_text
+except (ImportError, AttributeError):
     from pathlib2 import Path
 
 try:

@@ -1,6 +1,6 @@
 [build-system]
 requires = ["setuptools", "cython>=0.29", "wheel",
-            "pathlib2; python_version < '3'",
+            "pathlib2; python_version < '3.5'",
             "functools32; python_version < '3'",
            ]
 build-backend = "setuptools.build_meta"
