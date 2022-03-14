@@ -198,7 +198,8 @@ def build_isa_l(compiler_command, compiler_options):
         with ChDir(build_dir):
             # we need libisal.a compiled with -fPIC
             # we build .a from slib .o
-            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32", "slib", "isa-l.h"], **run_args)
+            ### lol so link fails ###
+            subprocess.call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32", "slib", "isa-l.h"], **run_args)
             shutil.copytree(os.path.join(build_dir, "include"),
                             os.path.join(temp_prefix, "include", "isa-l"))
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
