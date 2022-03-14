@@ -82,6 +82,7 @@ if SYSTEM_IS_UNIX:
 
 class BuildIsalExt(build_ext, object):
     def build_extension(self, ext):
+        print('%r'%ext)
         if not isinstance(ext, IsalExtension):
             super(BuildIsalExt, self).build_extension(ext)
             return
