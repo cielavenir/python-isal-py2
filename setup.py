@@ -209,7 +209,7 @@ def build_isa_l(compiler_command, compiler_options):
             #subprocess.check_call(["ls", "bin"])
             os.mkdir(os.path.join(temp_prefix, "lib"))
             #shutil.copy(os.path.join(build_dir, "bin", "libisal.dll"), os.path.join(temp_prefix, "lib", "libisal.dll"))
-            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
+            #subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
             subprocess.check_call(["gcc", "-c", "-o", "bin/arith64.o", "-m32", "-O2", "arith64.c"])
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS:
