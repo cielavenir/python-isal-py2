@@ -82,11 +82,11 @@ if SYSTEM_IS_UNIX:
 
 class BuildIsalExt(build_ext, object):
     def build_extension(self, ext):
-        print('%r'%ext)
+        print('chk %r'%ext)
         if not isinstance(ext, IsalExtension):
             super(BuildIsalExt, self).build_extension(ext)
             return
-
+        print('start %r'%ext)
         # Add option to link dynamically for packaging systems such as conda.
         # Always link dynamically on readthedocs to simplify install.
         if (os.getenv("PYTHON_ISAL_LINK_DYNAMIC") is not None or
@@ -161,6 +161,7 @@ class BuildIsalExt(build_ext, object):
 # see: https://docs.python.org/3/library/functools.html#functools.cache
 @lru_cache(maxsize=None)
 def build_isa_l(compiler_command, compiler_options):
+    print('build %r'%compiler_command)
     # Creating temporary directories
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
