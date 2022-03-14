@@ -166,6 +166,7 @@ def build_isa_l(compiler_command, compiler_options):
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
     shutil.copytree(ISA_L_SOURCE, build_dir)
+    shutil.copy(os.path.join("src", "isal", "chkstk.S"), os.path.join(build_dir, "chkstk.S"))
     compiler_options = re.sub('-isysroot /[^\s]+','',compiler_options)
 
     # Build environment is a copy of OS environment to allow user to influence
@@ -204,7 +205,7 @@ def build_isa_l(compiler_command, compiler_options):
                             os.path.join(temp_prefix, "include", "isa-l"))
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
             os.mkdir(os.path.join(temp_prefix, "lib"))
-            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "../chkstk.S"])
+            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS:
         with ChDir(build_dir):
