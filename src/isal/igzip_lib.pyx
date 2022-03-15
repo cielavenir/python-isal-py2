@@ -66,7 +66,7 @@ This module comes with the following constants:
 ``MEM_LEVEL_EXTRA_LARGE``      The largest memory level.
 ============================== ================================================
 """
-import sys
+
 from libc.stdint cimport UINT64_MAX, UINT32_MAX
 from libc.string cimport memmove, memcpy
 from cpython.mem cimport PyMem_Malloc, PyMem_Realloc, PyMem_Free
@@ -166,7 +166,6 @@ cdef Py_ssize_t arrange_output_buffer(stream_or_state *stream,
 
 cdef void arrange_input_buffer(stream_or_state *stream, Py_ssize_t *remains):
     stream.avail_in = <unsigned int>py_ssize_t_min(remains[0], PY_SSIZE_T_MAX)
-    print("arrange %d" % stream.avail_in); sys.stdout.flush()
     remains[0] -= stream.avail_in
 
 def compress(data,
