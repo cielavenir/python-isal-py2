@@ -125,7 +125,7 @@ class BuildIsalExt(build_ext, object):
                 raise NotImplementedError("Unknown compiler")
             isa_l_prefix_dir = build_isa_l(compiler_command,
                                            " ".join(compiler_args))
-            if SYSTEM_IS_UNIX:
+            if SYSTEM_IS_UNIX or (SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32):
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "lib", "libisal.a")]
             elif SYSTEM_IS_WINDOWS:
@@ -164,6 +164,8 @@ def build_isa_l(compiler_command, compiler_options):
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
     shutil.copytree(ISA_L_SOURCE, build_dir)
+    shutil.copy(os.path.join("src", "isal", "chkstk.S"), os.path.join(build_dir, "chkstk.S"))
+    shutil.copy(os.path.join("src", "isal", "arith64.c"), os.path.join(build_dir, "arith64.c"))
     compiler_options = re.sub('-isysroot /[^\s]+','',compiler_options)
 
     # Build environment is a copy of OS environment to allow user to influence
@@ -192,6 +194,19 @@ def build_isa_l(compiler_command, compiler_options):
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
             os.mkdir(os.path.join(temp_prefix, "lib"))
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
+    elif SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32:
+        with ChDir(build_dir):
+            # we need libisal.a compiled with -fPIC, but windows does not require it
+            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32 -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS=-m32", "lib", "isa-l.h"], **run_args)
+            shutil.copytree(os.path.join(build_dir, "include"),
+                            os.path.join(temp_prefix, "include", "isa-l"))
+            shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
+            os.mkdir(os.path.join(temp_prefix, "lib"))
+            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
+            subprocess.check_call(["gcc", "-c", "-o", "bin/arith64.o", "-m32", "-O2", "arith64.c"])
+            subprocess.check_call(["ar","r", os.path.join(build_dir, "bin/isa-l.a"), "bin/chkstk.o", "bin/arith64.o"])
+            shutil.copy(os.path.join(build_dir, "bin", "isa-l.a"), os.path.join(temp_prefix, "lib", "libisal.a"))
+            #subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS:
         with ChDir(build_dir):
             subprocess.run(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)

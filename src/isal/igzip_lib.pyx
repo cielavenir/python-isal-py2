@@ -151,7 +151,7 @@ cdef Py_ssize_t arrange_output_buffer_with_maximum(stream_or_state *stream,
                 return -1
             buffer[0] = new_buffer
             length = new_length
-    stream.avail_out = <unsigned int>py_ssize_t_min(length - occupied, UINT32_MAX)
+    stream.avail_out = <unsigned int>py_ssize_t_min(length - occupied, PY_SSIZE_T_MAX)
     stream.next_out = buffer[0] + occupied
     return length
 
@@ -165,7 +165,7 @@ cdef Py_ssize_t arrange_output_buffer(stream_or_state *stream,
     return ret
 
 cdef void arrange_input_buffer(stream_or_state *stream, Py_ssize_t *remains):
-    stream.avail_in = <unsigned int>py_ssize_t_min(remains[0], UINT32_MAX)
+    stream.avail_in = <unsigned int>py_ssize_t_min(remains[0], PY_SSIZE_T_MAX)
     remains[0] -= stream.avail_in
 
 def compress(data,
