@@ -82,11 +82,10 @@ if SYSTEM_IS_UNIX:
 
 class BuildIsalExt(build_ext, object):
     def build_extension(self, ext):
-        print('chk %r'%ext)
         if not isinstance(ext, IsalExtension):
             super(BuildIsalExt, self).build_extension(ext)
             return
-        print('start %r'%ext)
+
         # Add option to link dynamically for packaging systems such as conda.
         # Always link dynamically on readthedocs to simplify install.
         if (os.getenv("PYTHON_ISAL_LINK_DYNAMIC") is not None or
@@ -129,7 +128,6 @@ class BuildIsalExt(build_ext, object):
             if SYSTEM_IS_UNIX or (SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32):
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "lib", "libisal.a")]
-                pass
             elif SYSTEM_IS_WINDOWS:
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "isa-l_static.lib")]
@@ -140,8 +138,6 @@ class BuildIsalExt(build_ext, object):
                                              "include")]
             # -fPIC needed for proper static linking
             ext.extra_compile_args = ["-fPIC"]
-            if SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32:
-                ext.libraries = ["legacy_stdio_definitions"]
         if os.getenv("CYTHON_COVERAGE") is not None:
             # Import cython here so python setup.py can be used without
             # installing cython.
@@ -164,7 +160,6 @@ class BuildIsalExt(build_ext, object):
 # see: https://docs.python.org/3/library/functools.html#functools.cache
 @lru_cache(maxsize=None)
 def build_isa_l(compiler_command, compiler_options):
-    print('build %r'%compiler_command)
     # Creating temporary directories
     build_dir = tempfile.mktemp()
     temp_prefix = tempfile.mkdtemp()
@@ -201,16 +196,12 @@ def build_isa_l(compiler_command, compiler_options):
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32:
         with ChDir(build_dir):
-            # we need libisal.a compiled with -fPIC
-            # we build .a from slib .o
-            ### lol so link fails ###
-            subprocess.call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32 -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS=-m32", "lib", "isa-l.h"], **run_args)
+            # we need libisal.a compiled with -fPIC, but windows does not require it
+            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32 -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS=-m32", "lib", "isa-l.h"], **run_args)
             shutil.copytree(os.path.join(build_dir, "include"),
                             os.path.join(temp_prefix, "include", "isa-l"))
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
-            #subprocess.check_call(["ls", "bin"])
             os.mkdir(os.path.join(temp_prefix, "lib"))
-            #shutil.copy(os.path.join(build_dir, "bin", "libisal.dll"), os.path.join(temp_prefix, "lib", "libisal.dll"))
             subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
             subprocess.check_call(["gcc", "-c", "-o", "bin/arith64.o", "-m32", "-O2", "arith64.c"])
             subprocess.check_call(["ar","r", os.path.join(build_dir, "bin/isa-l.a"), "bin/chkstk.o", "bin/arith64.o"])
