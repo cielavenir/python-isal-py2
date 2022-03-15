@@ -140,7 +140,8 @@ class BuildIsalExt(build_ext, object):
                                              "include")]
             # -fPIC needed for proper static linking
             ext.extra_compile_args = ["-fPIC"]
-            #ext.libraries = ["c"]
+            if SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32:
+                ext.libraries = ["legacy_stdio_definitions"]
         if os.getenv("CYTHON_COVERAGE") is not None:
             # Import cython here so python setup.py can be used without
             # installing cython.
