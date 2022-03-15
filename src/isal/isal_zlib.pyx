@@ -301,7 +301,7 @@ cdef class Compress:
                   int memLevel = DEF_MEM_LEVEL,
                   int strategy = Z_DEFAULT_STRATEGY,
                   zdict = None):
-        print("ssss", sizeof(isal_zstream))
+        print("ssss %d" % sizeof(isal_zstream))
         if strategy != Z_DEFAULT_STRATEGY:
             warnings.warn("Only one strategy is supported when using "
                           "isal_zlib. Using the default strategy.")
