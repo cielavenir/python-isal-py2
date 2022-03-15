@@ -54,14 +54,12 @@ typedef union
 
 // Return the absolute value of a.
 // Note LLINT_MIN cannot be negated.
-__declspec(dllimport)
 arith64_s64 __absvdi2(arith64_s64 a)
 {
     return arith64_abs(a);
 }
 
 // Return the result of shifting a left by b bits.
-__declspec(dllimport)
 arith64_s64 __ashldi3(arith64_s64 a, int b)
 {
     arith64_word w = {.s64 = a};
@@ -81,7 +79,6 @@ arith64_s64 __ashldi3(arith64_s64 a, int b)
 }
 
 // Return the result of arithmetically shifting a right by b bits.
-__declspec(dllimport)
 arith64_s64 __ashrdi3(arith64_s64 a, int b)
 {
     arith64_word w = {.s64 = a};
@@ -102,7 +99,6 @@ arith64_s64 __ashrdi3(arith64_s64 a, int b)
 
 // These functions return the number of leading 0-bits in a, starting at the
 // most significant bit position. If a is zero, the result is undefined.
-__declspec(dllimport)
 int __clzsi2(arith64_u32 a)
 {
     int b, n = 0;
@@ -113,7 +109,6 @@ int __clzsi2(arith64_u32 a)
     return n + !(a & 0x80000000);
 }
 
-__declspec(dllimport)
 int __clzdi2(arith64_u64 a)
 {
     int b, n = 0;
@@ -127,7 +122,6 @@ int __clzdi2(arith64_u64 a)
 
 // These functions return the number of trailing 0-bits in a, starting at the
 // least significant bit position. If a is zero, the result is undefined.
-__declspec(dllimport)
 int __ctzsi2(arith64_u32 a)
 {
     int b, n = 0;
@@ -138,7 +132,6 @@ int __ctzsi2(arith64_u32 a)
     return n + !(a & 0x00000001);
 }
 
-__declspec(dllimport)
 int __ctzdi2(arith64_u64 a)
 {
     int b, n = 0;
@@ -153,7 +146,6 @@ int __ctzdi2(arith64_u64 a)
 // Calculate both the quotient and remainder of the unsigned division of a and
 // b. The return value is the quotient, and the remainder is placed in variable
 // pointed to by c (if it's not NULL).
-__declspec(dllimport)
 arith64_u64 __divmoddi4(arith64_u64 a, arith64_u64 b, arith64_u64 *c)
 {
     if (b > a)                                  // divisor > numerator?
@@ -197,7 +189,6 @@ arith64_u64 __divmoddi4(arith64_u64 a, arith64_u64 b, arith64_u64 *c)
 }
 
 // Return the quotient of the signed division of a and b.
-__declspec(dllimport)
 arith64_s64 __divdi3(arith64_s64 a, arith64_s64 b)
 {
     arith64_u64 q = __divmoddi4(arith64_abs(a), arith64_abs(b), (void *)0);
@@ -206,14 +197,12 @@ arith64_s64 __divdi3(arith64_s64 a, arith64_s64 b)
 
 // Return the index of the least significant 1-bit in a, or the value zero if a
 // is zero. The least significant bit is index one.
-__declspec(dllimport)
 int __ffsdi2(arith64_u64 a)
 {
     return a ? __ctzdi2(a) + 1 : 0;
 }
 
 // Return the result of logically shifting a right by b bits.
-__declspec(dllimport)
 arith64_u64 __lshrdi3(arith64_u64 a, int b)
 {
     arith64_word w = {.u64 = a};
@@ -233,7 +222,6 @@ arith64_u64 __lshrdi3(arith64_u64 a, int b)
 }
 
 // Return the remainder of the signed division of a and b.
-__declspec(dllimport)
 arith64_s64 __moddi3(arith64_s64 a, arith64_s64 b)
 {
     arith64_u64 r;
@@ -242,7 +230,6 @@ arith64_s64 __moddi3(arith64_s64 a, arith64_s64 b)
 }
 
 // Return the number of bits set in a.
-__declspec(dllimport)
 int __popcountsi2(arith64_u32 a)
 {
     // collect sums into two low bytes
@@ -255,7 +242,6 @@ int __popcountsi2(arith64_u32 a)
 }
 
 // Return the number of bits set in a.
-__declspec(dllimport)
 int __popcountdi2(arith64_u64 a)
 {
     // collect sums into two low bytes
@@ -269,14 +255,12 @@ int __popcountdi2(arith64_u64 a)
 }
 
 // Return the quotient of the unsigned division of a and b.
-__declspec(dllimport)
 arith64_u64 __udivdi3(arith64_u64 a, arith64_u64 b)
 {
     return __divmoddi4(a, b, (void *)0);
 }
 
 // Return the remainder of the unsigned division of a and b.
-__declspec(dllimport)
 arith64_u64 __umoddi3(arith64_u64 a, arith64_u64 b)
 {
     arith64_u64 r;
