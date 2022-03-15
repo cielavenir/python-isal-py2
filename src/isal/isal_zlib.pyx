@@ -65,6 +65,7 @@ Implementation of the zlib module using the ISA-L libraries.
 
 import warnings
 import zlib
+import sys
 
 from .crc cimport crc32_gzip_refl
 # Import isa-l igzip-lib C constants and functions
@@ -301,7 +302,7 @@ cdef class Compress:
                   int memLevel = DEF_MEM_LEVEL,
                   int strategy = Z_DEFAULT_STRATEGY,
                   zdict = None):
-        print("ssss %d" % sizeof(isal_zstream))
+        print("ssss %d" % sizeof(isal_zstream)); sys.stdout.flush()
         if strategy != Z_DEFAULT_STRATEGY:
             warnings.warn("Only one strategy is supported when using "
                           "isal_zlib. Using the default strategy.")
