@@ -285,6 +285,7 @@ def compressobj(int level=ISAL_DEFAULT_COMPRESSION_I,
                     compressed data. The most common subsequences should come
                     at the end.
     """
+    
     return Compress.__new__(Compress, level, method, wbits, memLevel, strategy, zdict)
 
 
@@ -300,6 +301,7 @@ cdef class Compress:
                   int memLevel = DEF_MEM_LEVEL,
                   int strategy = Z_DEFAULT_STRATEGY,
                   zdict = None):
+        print("ssss", sizeof(isal_zstream))
         if strategy != Z_DEFAULT_STRATEGY:
             warnings.warn("Only one strategy is supported when using "
                           "isal_zlib. Using the default strategy.")
