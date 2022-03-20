@@ -194,16 +194,17 @@ def build_isa_l(compiler_command, compiler_options):
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
             os.mkdir(os.path.join(temp_prefix, "lib"))
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
-    elif SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32:
+    elif SYSTEM_IS_WINDOWS and (sys.maxsize < 1<<32 or sys.version_info < (3,5)):
+        msiz = '-m32' if sys.maxsize < 1<<32 else '-m64'
         with ChDir(build_dir):
             # we need libisal.a compiled with -fPIC, but windows does not require it
-            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES=-m32 -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS=-m32", "lib", "isa-l.h"], **run_args)
+            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES="+msiz+" -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS="+msiz, "lib", "isa-l.h"], **run_args)
             shutil.copytree(os.path.join(build_dir, "include"),
                             os.path.join(temp_prefix, "include", "isa-l"))
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
             os.mkdir(os.path.join(temp_prefix, "lib"))
-            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", "-m32", "chkstk.S"])
-            subprocess.check_call(["gcc", "-c", "-o", "bin/arith64.o", "-m32", "-O2", "arith64.c"])
+            subprocess.check_call(["gcc", "-c", "-o", "bin/chkstk.o", msiz, "chkstk.S"])
+            subprocess.check_call(["gcc", "-c", "-o", "bin/arith64.o", msiz, "-O2", "arith64.c"])
             subprocess.check_call(["ar","r", os.path.join(build_dir, "bin/isa-l.a"), "bin/chkstk.o", "bin/arith64.o"])
             shutil.copy(os.path.join(build_dir, "bin", "isa-l.a"), os.path.join(temp_prefix, "lib", "libisal.a"))
             #subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
