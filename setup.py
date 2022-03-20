@@ -130,7 +130,8 @@ class BuildIsalExt(build_ext, object):
             if SYSTEM_IS_UNIX or (SYSTEM_IS_WINDOWS and (sys.maxsize < 1<<32 or sys.version_info < (3,5))):
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "lib", "libisal.a")]
-                ext.include_dirs.append(os.path.join("src", "isal"))
+                if SYSTEM_IS_WINDOWS and sys.version_info < (3,5):
+                    ext.include_dirs.append(os.path.join("src", "isal", "stdint"))
             elif SYSTEM_IS_WINDOWS:
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "isa-l_static.lib")]
