@@ -125,17 +125,18 @@ class BuildIsalExt(build_ext, object):
                 raise NotImplementedError("Unknown compiler")
             isa_l_prefix_dir = build_isa_l(compiler_command,
                                            " ".join(compiler_args))
-            if SYSTEM_IS_UNIX or (SYSTEM_IS_WINDOWS and sys.maxsize < 1<<32):
+            ext.include_dirs = [os.path.join(isa_l_prefix_dir,
+                                             "include")]
+            if SYSTEM_IS_UNIX or (SYSTEM_IS_WINDOWS and (sys.maxsize < 1<<32 or sys.version_info < (3,5))):
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "lib", "libisal.a")]
+                ext.include_dirs.append(os.path.join("src", "isal"))
             elif SYSTEM_IS_WINDOWS:
                 ext.extra_objects = [
                     os.path.join(isa_l_prefix_dir, "isa-l_static.lib")]
             else:
                 raise NotImplementedError(
                     "Unsupported platform: %s"%sys.platform)
-            ext.include_dirs = [os.path.join(isa_l_prefix_dir,
-                                             "include")]
             # -fPIC needed for proper static linking
             ext.extra_compile_args = ["-fPIC"]
         if os.getenv("CYTHON_COVERAGE") is not None:
