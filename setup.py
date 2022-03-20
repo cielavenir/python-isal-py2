@@ -209,7 +209,7 @@ def build_isa_l(compiler_command, compiler_options):
             #subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS:
         with ChDir(build_dir):
-            subprocess.run(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)
+            subprocess.check_call(["nmake", "/E", "/f", "Makefile.nmake"], **run_args)
         Path(temp_prefix, "include").mkdir()
         print(temp_prefix, file=sys.stderr)
         shutil.copytree(os.path.join(build_dir, "include"),
