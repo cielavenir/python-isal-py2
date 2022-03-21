@@ -199,16 +199,18 @@ def build_isa_l(compiler_command, compiler_options):
     elif SYSTEM_IS_WINDOWS and (sys.maxsize < 1<<32 or sys.version_info < (3,5)):
         if sys.maxsize < 1<<32:
             msiz = '-m32'
+            msiz_isal = '-m32'
             arch = 'noarch'
             host_cpu = 'base_aliases'
         else:
-            msiz = ''
+            msiz = '-m64'
+            msiz_isal = ''
             arch = 'mingw'
             host_cpu = 'x86_64'
         with ChDir(build_dir):
             subprocess.check_call(["sed", "-i", "s/x86_64-w64-mingw32-ar/ar/", "make.inc"])
             # we need libisal.a compiled with -fPIC, but windows does not require it
-            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch="+arch, "host_cpu="+host_cpu, "DEFINES="+msiz+" -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS="+msiz, "lib", "isa-l.h"], **run_args)
+            subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch="+arch, "host_cpu="+host_cpu, "DEFINES="+msiz_isal+" -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS="+msiz, "lib", "isa-l.h"], **run_args)
             shutil.copytree(os.path.join(build_dir, "include"),
                             os.path.join(temp_prefix, "include", "isa-l"))
             shutil.copy(os.path.join(build_dir, "isa-l.h"), os.path.join(temp_prefix, "include", "isa-l.h"))
