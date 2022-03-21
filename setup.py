@@ -202,7 +202,7 @@ def build_isa_l(compiler_command, compiler_options):
             arch = 'noarch'
             host_cpu = 'base_aliases'
         else:
-            msiz = '-m64'
+            msiz = ''
             arch = 'mingw'
             host_cpu = 'x86_64'
         with ChDir(build_dir):
