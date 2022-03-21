@@ -197,7 +197,14 @@ def build_isa_l(compiler_command, compiler_options):
             os.mkdir(os.path.join(temp_prefix, "lib"))
             subprocess.check_call(["ar","cr", os.path.join(temp_prefix, "lib/libisal.a")] + [os.path.join('bin', obj) for obj in os.listdir('bin') if obj.endswith('.o')])
     elif SYSTEM_IS_WINDOWS and (sys.maxsize < 1<<32 or sys.version_info < (3,5)):
-        msiz = '-m32' if sys.maxsize < 1<<32 else '-m64'
+        if sys.maxsize < 1<<32:
+            msiz = '-m32'
+            arch = 'noarch'
+            host_cpu = 'base_aliases'
+        else:
+            msiz = '-m64'
+            arch = 'mingw'
+            host_cpu = 'x86_64'
         with ChDir(build_dir):
             # we need libisal.a compiled with -fPIC, but windows does not require it
             subprocess.check_call(["make", "-f", "Makefile.unx", "-j", str(cpu_count), "arch=noarch", "host_cpu=base_aliases", "DEFINES="+msiz+" -Dto_be32=_byteswap_ulong -Dbswap_32=_byteswap_ulong", "LDFLAGS="+msiz, "lib", "isa-l.h"], **run_args)
